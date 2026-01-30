@@ -1,0 +1,64 @@
+
+services:
+  # Service PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: arbre_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      # Persister les données de la base
+      - postgres_data:/var/lib/postgresql/data
+      # Initialiser la base avec le schema
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - arbre_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Service Node.js
+  app:
+    build: .
+    container_name: arbre_app
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DOMAIN=${DOMAIN}
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.arbre.rule=Host(`joram.famproject.cloud`)"
+      - "traefik.http.services.arbre.loadbalancer.server.port=3000"
+      - "traefik.http.routers.arbre.entrypoints=websecure"
+      - "traefik.http.routers.arbre.tls.certresolver=leresolver"
+      - "traefik.docker.network=traefik-public"
+      - "traefik.http.routers.arbre.middlewares=arbre-auth"
+      - "traefik.http.middlewares.arbre-auth.basicauth.users=${BASIC_AUTH_USERS}"
+    networks:
+      - arbre_network
+      - traefik-public
+
+# Volumes pour persister les données
+volumes:
+  postgres_data:
+
+# Réseau pour la communication entre conteneurs
+networks:
+  arbre_network:
+    driver: bridge
+
+  traefik-public:
+    external: true
