@@ -39,27 +39,14 @@ services:
       db:
         condition: service_healthy
     labels:
-      # Router HTTP (redirection vers HTTPS)
-      - "traefik.http.routers.arbre-http.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.arbre-http.entrypoints=web"
-      - "traefik.http.routers.arbre-http.middlewares=redirect-to-https"
-      
-      # Router HTTPS avec BasicAuth
-      - "traefik.http.routers.arbre-https.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.arbre-https.entrypoints=websecure"
-      - "traefik.http.routers.arbre-https.tls=true"
-      - "traefik.http.routers.arbre-https.tls.certresolver=leresolver"
-      - "traefik.http.routers.arbre-https.middlewares=arbre-auth"
-      
-      # Middleware de redirection HTTP -> HTTPS
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
-      
-      # Middleware BasicAuth
-      - "traefik.http.middlewares.arbre-auth.basicauth.users=${BASIC_AUTH_USERS}"
-      
-      # Service (port du conteneur)
+      - "traefik.enable=true"
+      - "traefik.http.routers.arbre.rule=Host(`joram.famproject.cloud`)"
       - "traefik.http.services.arbre.loadbalancer.server.port=3000"
+      - "traefik.http.routers.arbre.entrypoints=websecure"
+      - "traefik.http.routers.arbre.tls.certresolver=leresolver"
+      - "traefik.docker.network=traefik-public"
+      - "traefik.http.routers.arbre.middlewares=arbre-auth"
+      - "traefik.http.middlewares.arbre-auth.basicauth.users=${BASIC_AUTH_USERS}"
     networks:
       - arbre_network
       - traefik-public
