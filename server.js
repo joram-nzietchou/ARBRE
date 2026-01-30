@@ -12,17 +12,34 @@ app.use(express.static(__dirname));
 
 // Configuration BD
 const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'arbre',
-    password: 'joram18',
-    port: 5432
+    user: process.env.DB_USER || 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    database: process.env.DB_NAME || 'arbre',
+    password: process.env.DB_PASSWORD || 'joram18',
+    port: process.env.DB_PORT || 5432
 });
 
-// Test BD
-pool.connect()
-    .then(() => console.log('✅ PostgreSQL connecté'))
-    .catch(err => console.error('❌ Erreur DB:', err.message));
+// Test BD avec retry pour attendre que PostgreSQL soit prêt
+async function connectWithRetry() {
+    const maxRetries = 10;
+    let retries = 0;
+    
+    while (retries < maxRetries) {
+        try {
+            await pool.connect();
+            console.log('✅ PostgreSQL connecté');
+            return;
+        } catch (err) {
+            retries++;
+            console.log(`⏳ Tentative de connexion ${retries}/${maxRetries}...`);
+            if (retries === maxRetries) {
+                console.error('❌ Erreur DB:', err.message);
+                process.exit(1);
+            }
+            await new Promise(resolve => setTimeout(resolve, 3000));
+        }
+    }
+}
 
 // ========== ROUTES API ==========
 
@@ -153,13 +170,24 @@ function formatDate(date) {
     return new Date(date).toISOString().split('T')[0];
 }
 
+// Route de santé (health check)
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok' });
+});
+
 // Toutes les autres routes vont au frontend
 app.use((req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Démarrer le serveur
-const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`🚀 Serveur démarré: http://localhost:${PORT}`);
+// Démarrer le serveur après connexion à la base
+const PORT = process.env.PORT || 3000;
+const DOMAIN = process.env.DOMAIN || 'localhost';
+
+connectWithRetry().then(() => {
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`🚀 Serveur démarré sur le port ${PORT}`);
+        console.log(`📍 Application accessible via: https://${DOMAIN}`);
+        console.log(`🔐 BasicAuth activée`);
+    });
 });

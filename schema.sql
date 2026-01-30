@@ -1,7 +1,9 @@
-create database arbre;
 
-drop table if exists  famille cascade;
-drop table if exists personne cascade;
+
+DROP TABLE IF EXISTS personne_famille CASCADE;
+DROP TABLE IF EXISTS parent_enfant CASCADE;
+DROP TABLE IF EXISTS personne CASCADE;
+DROP TABLE IF EXISTS famille CASCADE;
 
 ----------- table famille-----------
 create table famille(
