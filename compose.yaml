@@ -46,6 +46,8 @@ services:
       - "traefik.http.routers.arbre.tls.certresolver=leresolver"
       - "traefik.docker.network=traefik-public"
       - "traefik.http.routers.arbre.middlewares=arbre-auth"
+      - "traefik.http.middlewares.arbre-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.arbre-redirect.redirectscheme.permanent=true"
       - "traefik.http.middlewares.arbre-auth.basicauth.users=${BASIC_AUTH_USERS}"
     networks:
       - arbre_network
