@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arbre Généalogique</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌳</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <!-- En-tête -->
+        <header class="header">
+            <h1><i class="fas fa-tree"></i> Arbre Généalogique</h1>
+            <div class="family-display">
+                <span id="currentFamily" class="family-name">Chargement...</span>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="navigation">
+            <button id="backButton" class="nav-button" disabled>
+                <i class="fas fa-arrow-left"></i> Retour
+            </button>
+            
+            <button id="refreshBtn" class="refresh-button">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </nav>
+
+        <!-- Arbre généalogique -->
+        <main class="main-content">
+            <div id="tree-container" class="tree-container">
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Chargement de l'arbre...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+</body>
+</html>
