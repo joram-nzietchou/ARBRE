@@ -1,5 +1,5 @@
 // Configuration
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'http://localhost:3000/api';
 let currentFamilyId = '1';
 let familyHistory = ['1'];
 
@@ -63,8 +63,8 @@ async function displayFamily(familyId) {
         // Mettre à jour l'affichage
         updateFamilyDisplay(family);
         
-        // Générer l'arbre
-        generateTree(family);
+        // Générer l'arbre avec 3 générations
+        generateTreeWith3Generations(family);
         
         console.log(`✅ Famille "${family.name}" chargée avec succès`);
         
@@ -102,17 +102,38 @@ function updateFamilyDisplay(family) {
     elements.currentFamily.textContent = family.name;
 }
 
-// Générer l'arbre
-function generateTree(family) {
-    console.log('🎨 Génération de l\'arbre...');
-    console.log('Parents:', family.parents);
-    console.log('Enfants:', family.children);
+// Générer l'arbre avec 3 générations
+function generateTreeWith3Generations(family) {
+    console.log('🎨 Génération de l\'arbre 3 générations...');
     
     let html = '';
     
-    // Parents
+    // GÉNÉRATION 1 : GRANDS-PARENTS (au niveau de la famille, pas doublons)
+    if (family.grandparents && family.grandparents.length > 0) {
+        html += `
+            <div class="generation-label">
+                <i class="fas fa-users"></i> Grands-parents
+            </div>
+            <div class="grandparents-row">
+                ${family.grandparents.map(gp => `
+                    <div class="grandparent-card ${gp.gender === 'female' ? 'grandmother-card' : 'grandfather-card'}">
+                        <i class="fas fa-${gp.gender === 'female' ? 'female' : 'male'}"></i>
+                        <div class="person-name">${gp.lastName} ${gp.firstName}</div>
+                        <div class="person-birth">${formatDate(gp.birthDate)}</div>
+                        <div class="person-role">${gp.role === 'mere' ? 'Grand-mère' : 'Grand-père'}</div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="generation-connector"></div>
+        `;
+    }
+    
+    // GÉNÉRATION 2 : PARENTS
     if (family.parents && family.parents.length > 0) {
         html += `
+            <div class="generation-label">
+                <i class="fas fa-user-friends"></i> Parents
+            </div>
             <div class="parents-row">
                 ${family.parents.map((parent, index) => {
                     const hasOtherFamily = parent.hasOtherFamily && parent.otherFamilyId;
@@ -140,13 +161,24 @@ function generateTree(family) {
         `;
     }
     
-    // Enfants
+    // GÉNÉRATION 3 : ENFANTS
     if (family.children && family.children.length > 0) {
+        console.log('👶 Enfants détectés:', family.children.length);
+        family.children.forEach(child => {
+            console.log(`  - ${child.firstName}: hasOtherFamily=${child.hasOtherFamily}, otherFamilyId=${child.otherFamilyId}`);
+        });
+        
         html += `
+            <div class="generation-label">
+                <i class="fas fa-child"></i> Enfants
+            </div>
             <div class="children-row">
                 <div class="children-connector"></div>
                 ${family.children.map(child => {
                     const hasOtherFamily = child.hasOtherFamily && child.otherFamilyId;
+                    const hasGrandchildren = child.grandchildren && child.grandchildren.length > 0;
+                    
+                    console.log(`🔍 ${child.firstName}: cliquable=${hasOtherFamily}, famille=${child.otherFamilyId}`);
                     
                     return `
                         <div class="enfant">
@@ -161,7 +193,23 @@ function generateTree(family) {
                                         <span>A une famille</span>
                                     </div>
                                 ` : ''}
+                                ${hasGrandchildren ? `
+                                    <div class="grandchildren-count">
+                                        <i class="fas fa-baby"></i> ${child.grandchildren.length}
+                                    </div>
+                                ` : ''}
                             </div>
+                            
+                            ${hasGrandchildren ? `
+                                <div class="grandchildren-mini">
+                                    ${child.grandchildren.map(gc => `
+                                        <div class="grandchild-mini" title="${gc.lastName} ${gc.firstName}">
+                                            <i class="fas fa-${gc.gender === 'female' ? 'female' : 'male'}"></i>
+                                            <span>${gc.firstName}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
                         </div>
                     `;
                 }).join('')}
@@ -184,7 +232,7 @@ function generateTree(family) {
     // Ajouter les écouteurs d'événements
     addClickListeners();
     
-    console.log('✅ Arbre généré');
+    console.log('✅ Arbre 3 générations généré');
 }
 
 // Ajouter les écouteurs d'événements pour les clics
