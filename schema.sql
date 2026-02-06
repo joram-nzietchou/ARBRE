@@ -64,7 +64,7 @@ INSERT INTO personne(nom, prenom, sexe) VALUES
     ('tsapi', 'andy', 'M'),                     -- 15
     ('tsapi', 'audrey', 'F'),                   -- 16
     ('tsapi', 'chloé', 'F'),                    -- 17
-    ('tsapi', 'amalia', 'F'),                   -- 18
+    ('tsapi', 'amalya', 'F'),                   -- 18
     ('tata', 'viviane', 'F'),                   -- 19
     -- Enfants supplémentaire DEDZO
     ('tchoumene dedzo', 'rolland', 'M'),         -- 20
@@ -96,7 +96,7 @@ INSERT INTO personne_famille VALUES
     (15, 3, 'enfant'),   -- Andy (enfant)
     (16, 3, 'enfant'),   -- Audrey (enfant)
     (17, 3, 'enfant'),   -- Chloé (enfant)
-    (18, 3, 'enfant');   -- Amalia (enfant)
+    (18, 3, 'enfant');   -- Amalya (enfant)
 
 -- Insertion dans parent_enfant
 INSERT INTO parent_enfant VALUES
@@ -129,12 +129,12 @@ INSERT INTO parent_enfant VALUES
     (3, 15, 'pere'),     -- Théophile → Andy
     (3, 16, 'pere'),     -- Théophile → Audrey
     (3, 17, 'pere'),     -- Théophile → Chloé
-    (3, 18, 'pere'),     -- Théophile → Amalia
+    (3, 18, 'pere'),     -- Théophile → Amalya
     (19, 14, 'mere'),    -- Viviane → Arthur
     (19, 15, 'mere'),    -- Viviane → Andy
     (19, 16, 'mere'),    -- Viviane → Audrey
     (19, 17, 'mere'),    -- Viviane → Chloé
-    (19, 18, 'mere');    -- Viviane → Amalia
+    (19, 18, 'mere');    -- Viviane → Amalya
 
     
 --------grand-parents famille nzietchou------
@@ -145,5 +145,5 @@ insert into personne(nom, prenom, sexe) values
 --insert into personne_famille values
 --(22,2,'pere')
 INSERT INTO parent_enfant VALUES
-    (24, 7, 'pere'),   -- Marc → Donatien
-    (25, 7, 'mere');   -- Geneviève → Donatien
+    (22, 7, 'pere'),   -- Marc → Donatien
+    (23, 7, 'mere');   -- Geneviève → Donatien
