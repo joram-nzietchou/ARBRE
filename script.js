@@ -12,10 +12,10 @@ const elements = {
 
 // Initialisation
 async function init() {
-    console.log('🌳 Initialisation de l\'arbre généalogique...');
+    console.log('🌳 Initialisation de l\'arbre généalogique (compatible polygamie)...');
     
     // Afficher la famille initiale
-    await displayFamily('1');
+    await displayFamily('3');
     
     // Écouteurs d'événements
     elements.backButton.addEventListener('click', goBack);
@@ -63,7 +63,7 @@ async function displayFamily(familyId) {
         // Mettre à jour l'affichage
         updateFamilyDisplay(family);
         
-        // Générer l'arbre avec 3 générations
+        // Générer l'arbre avec 3 générations (compatible polygamie)
         generateTreeWith3Generations(family);
         
         console.log(`✅ Famille "${family.name}" chargée avec succès`);
@@ -102,9 +102,16 @@ function updateFamilyDisplay(family) {
     elements.currentFamily.textContent = family.name;
 }
 
-// Générer l'arbre avec 3 générations
+// Générer l'arbre avec 3 générations (COMPATIBLE POLYGAMIE)
 function generateTreeWith3Generations(family) {
-    console.log('🎨 Génération de l\'arbre 3 générations...');
+    console.log('🎨 Génération de l\'arbre 3 générations (polygamie supportée)...');
+    
+    // Analyser la structure familiale
+    const fathers = family.parents.filter(p => p.role === 'pere');
+    const mothers = family.parents.filter(p => p.role === 'mere');
+    const isPolygamous = mothers.length > 1 || fathers.length > 1;
+    
+    console.log(`👨 Pères: ${fathers.length}, 👩 Mères: ${mothers.length}, Polygame: ${isPolygamous}`);
     
     let html = '';
     
@@ -128,45 +135,95 @@ function generateTreeWith3Generations(family) {
         `;
     }
     
-    // GÉNÉRATION 2 : PARENTS
+    // GÉNÉRATION 2 : PARENTS (COMPATIBLE POLYGAMIE)
     if (family.parents && family.parents.length > 0) {
         html += `
             <div class="generation-label">
                 <i class="fas fa-user-friends"></i> Parents
-            </div>
-            <div class="parents-row">
-                ${family.parents.map((parent, index) => {
-                    const hasOtherFamily = parent.hasOtherFamily && parent.otherFamilyId;
-                    
-                    return `
-                        <div class="parent-card ${parent.gender === 'female' ? 'mother-card' : ''} 
-                             ${hasOtherFamily ? 'clickable has-family' : ''}"
-                             ${hasOtherFamily ? `data-target-family="${parent.otherFamilyId}"` : ''}>
-                            <i class="fas fa-${parent.gender === 'female' ? 'female' : 'male'}"></i>
-                            <div class="person-name">${parent.lastName} ${parent.firstName}</div>
-                            <div class="person-birth">${formatDate(parent.birthDate)}</div>
-                            <div class="person-role">${parent.role === 'mere' ? 'Mère' : 'Père'}</div>
-                            ${hasOtherFamily ? `
-                                <div class="family-indicator">
-                                    <i class="fas fa-arrow-up"></i>
-                                    <span>Famille d'origine</span>
-                                </div>
-                            ` : ''}
-                        </div>
-                        ${index === 0 && family.parents.length > 1 ? '<div class="parents-connector"></div>' : ''}
-                    `;
-                }).join('')}
-                ${family.parents.length > 0 ? '<div class="parents-vertical-line"></div>' : ''}
+                ${isPolygamous ? '<span class="polygamy-badge"><i class="fas fa-users"></i> Polygamie</span>' : ''}
             </div>
         `;
+        
+        if (isPolygamous) {
+            // MODE POLYGAMIE : Affichage flexible
+            html += `<div class="parents-row-polygamy">`;
+            
+            // Afficher les pères d'abord
+            html += fathers.map(father => {
+                const hasOtherFamily = father.hasOtherFamily && father.otherFamilyId;
+                return `
+                    <div class="parent-card father-card ${hasOtherFamily ? 'clickable has-family' : ''}"
+                         ${hasOtherFamily ? `data-target-family="${father.otherFamilyId}"` : ''}>
+                        <i class="fas fa-male"></i>
+                        <div class="person-name">${father.lastName} ${father.firstName}</div>
+                        <div class="person-birth">${formatDate(father.birthDate)}</div>
+                        <div class="person-role">Père</div>
+                        ${hasOtherFamily ? `
+                            <div class="family-indicator">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>Famille d'origine</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            // Afficher les mères
+            html += mothers.map((mother, index) => {
+                const hasOtherFamily = mother.hasOtherFamily && mother.otherFamilyId;
+                return `
+                    <div class="parent-card mother-card ${hasOtherFamily ? 'clickable has-family' : ''}"
+                         ${hasOtherFamily ? `data-target-family="${mother.otherFamilyId}"` : ''}>
+                        <i class="fas fa-female"></i>
+                        <div class="person-name">${mother.lastName} ${mother.firstName}</div>
+                        <div class="person-birth">${formatDate(mother.birthDate)}</div>
+                        <div class="person-role">Mère ${mothers.length > 1 ? (index + 1) : ''}</div>
+                        ${hasOtherFamily ? `
+                            <div class="family-indicator">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>Famille d'origine</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            html += `</div>`;
+            
+        } else {
+            // MODE NORMAL : Affichage classique (2 parents)
+            html += `
+                <div class="parents-row">
+                    ${family.parents.map((parent, index) => {
+                        const hasOtherFamily = parent.hasOtherFamily && parent.otherFamilyId;
+                        
+                        return `
+                            <div class="parent-card ${parent.gender === 'female' ? 'mother-card' : ''} 
+                                 ${hasOtherFamily ? 'clickable has-family' : ''}"
+                                 ${hasOtherFamily ? `data-target-family="${parent.otherFamilyId}"` : ''}>
+                                <i class="fas fa-${parent.gender === 'female' ? 'female' : 'male'}"></i>
+                                <div class="person-name">${parent.lastName} ${parent.firstName}</div>
+                                <div class="person-birth">${formatDate(parent.birthDate)}</div>
+                                <div class="person-role">${parent.role === 'mere' ? 'Mère' : 'Père'}</div>
+                                ${hasOtherFamily ? `
+                                    <div class="family-indicator">
+                                        <i class="fas fa-arrow-up"></i>
+                                        <span>Famille d'origine</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            ${index === 0 && family.parents.length > 1 ? '<div class="parents-connector"></div>' : ''}
+                        `;
+                    }).join('')}
+                    ${family.parents.length > 0 ? '<div class="parents-vertical-line"></div>' : ''}
+                </div>
+            `;
+        }
     }
     
     // GÉNÉRATION 3 : ENFANTS
     if (family.children && family.children.length > 0) {
         console.log('👶 Enfants détectés:', family.children.length);
-        family.children.forEach(child => {
-            console.log(`  - ${child.firstName}: hasOtherFamily=${child.hasOtherFamily}, otherFamilyId=${child.otherFamilyId}`);
-        });
         
         html += `
             <div class="generation-label">
@@ -177,8 +234,6 @@ function generateTreeWith3Generations(family) {
                 ${family.children.map(child => {
                     const hasOtherFamily = child.hasOtherFamily && child.otherFamilyId;
                     const hasGrandchildren = child.grandchildren && child.grandchildren.length > 0;
-                    
-                    console.log(`🔍 ${child.firstName}: cliquable=${hasOtherFamily}, famille=${child.otherFamilyId}`);
                     
                     return `
                         <div class="enfant">
@@ -232,7 +287,7 @@ function generateTreeWith3Generations(family) {
     // Ajouter les écouteurs d'événements
     addClickListeners();
     
-    console.log('✅ Arbre 3 générations généré');
+    console.log('✅ Arbre 3 générations généré (polygamie: ' + isPolygamous + ')');
 }
 
 // Ajouter les écouteurs d'événements pour les clics
